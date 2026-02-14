@@ -1,0 +1,69 @@
+---
+description: Kotlin Common Web Library 사용 가이드
+---
+
+# Kotlin Common Web Library 사용 가이드
+
+이 프로젝트는 `com.dalmeng:kotlin-common-web-lib` 라이브러리를 사용합니다.
+
+## 패키지 구조
+
+- `com.dalmeng.common.web.response`: 응답 관련 클래스
+  - `BaseResponse<T>`: 표준화된 API 응답 래퍼
+  - `ErrorResponse`: 에러 응답 데이터 클래스
+- `com.dalmeng.common.web.exception`: 예외 처리 관련 클래스
+  - `BaseException`: 커스텀 예외의 기본 클래스
+  - `GlobalExceptionHandler`: 전역 예외 처리 핸들러
+
+## 사용 패턴
+
+### 컨트롤러 응답
+
+모든 컨트롤러 메서드는 `BaseResponse<T>`를 반환해야 합니다:
+
+```kotlin
+@PostMapping
+fun create(
+    @RequestHeader("X-User-Id") userId: String,
+    @RequestBody @Valid request: CreateProblemRequest,
+): BaseResponse<ProblemResponse> =
+    BaseResponse.ok(data = problemService.create(userId, request))
+```
+
+### 예외 처리
+
+커스텀 예외는 `BaseException`을 상속받아 생성합니다:
+
+```kotlin
+class NotFoundException(message: String) : BaseException(404, message)
+class BadRequestException(message: String) : BaseException(400, message)
+```
+
+`GlobalExceptionHandler`가 자동으로 모든 예외를 처리하므로 별도의 예외 핸들러를 작성할 필요가 없습니다.
+
+### 성공 응답
+
+```kotlin
+// 데이터와 함께
+BaseResponse.ok(data = result)
+
+// 메시지 커스터마이징
+BaseResponse.ok(data = result, message = "Created successfully")
+
+// 상태 코드 변경
+BaseResponse.ok(data = result, statusCode = 201, message = "Created")
+```
+
+### 에러 응답
+
+예외를 던지면 자동으로 처리되지만, 필요시 직접 에러 응답을 생성할 수도 있습니다:
+
+```kotlin
+BaseResponse.error(statusCode = 400, message = "Invalid input")
+```
+
+## 주의사항
+
+1. `BaseResponse`는 제네릭 타입을 사용하므로 타입 안정성을 보장합니다.
+2. `GlobalExceptionHandler`는 `@RestControllerAdvice`로 등록되어 모든 컨트롤러에 적용됩니다.
+3. 예외 메시지는 사용자에게 노출되므로 민감한 정보를 포함하지 않도록 주의하세요.
