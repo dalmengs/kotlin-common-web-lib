@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.dalmeng"
-version = "1.0.1"
+version = "1.0.5"
 
 repositories {
     mavenCentral()
